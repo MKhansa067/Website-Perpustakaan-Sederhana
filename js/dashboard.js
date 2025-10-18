@@ -60,8 +60,18 @@ $(document).ready(function() {
         });
     }
 
+    // Helper function to convert file to base64
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
     // Add book form
-    $('#addBookForm').on('submit', function(e) {
+    $('#addBookForm').on('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(this);
@@ -75,31 +85,36 @@ $(document).ready(function() {
             pdf: null
         };
 
-        // Handle file uploads (simulasi)
-        const coverFile = formData.get('cover');
-        const pdfFile = formData.get('pdf');
+        try {
+            // Handle file uploads
+            const coverFile = formData.get('cover');
+            const pdfFile = formData.get('pdf');
 
-        if (coverFile && coverFile.size > 0) {
-            newBook.cover = URL.createObjectURL(coverFile);
+            if (coverFile && coverFile.size > 0) {
+                newBook.cover = await fileToBase64(coverFile);
+            }
+
+            if (pdfFile && pdfFile.size > 0) {
+                newBook.pdf = await fileToBase64(pdfFile);
+            }
+
+            books.push(newBook);
+            localStorage.setItem('books', JSON.stringify(books));
+            
+            renderBooksTable();
+            this.reset();
+            
+            alert('Buku berhasil ditambahkan!');
+            
+            // Switch to books section
+            $('.nav-item').removeClass('active');
+            $('.nav-item[data-section="books"]').addClass('active');
+            $('.content-section').removeClass('active');
+            $('#books-section').addClass('active');
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            alert('Terjadi kesalahan saat mengupload file!');
         }
-
-        if (pdfFile && pdfFile.size > 0) {
-            newBook.pdf = URL.createObjectURL(pdfFile);
-        }
-
-        books.push(newBook);
-        localStorage.setItem('books', JSON.stringify(books));
-        
-        renderBooksTable();
-        this.reset();
-        
-        alert('Buku berhasil ditambahkan!');
-        
-        // Switch to books section
-        $('.nav-item').removeClass('active');
-        $('.nav-item[data-section="books"]').addClass('active');
-        $('.content-section').removeClass('active');
-        $('#books-section').addClass('active');
     });
 
     // Edit book
@@ -119,37 +134,42 @@ $(document).ready(function() {
     });
 
     // Update book
-    $('#editBookForm').on('submit', function(e) {
+    $('#editBookForm').on('submit', async function(e) {
         e.preventDefault();
         
         const bookId = parseInt($('#editBookId').val());
         const bookIndex = books.findIndex(b => b.id === bookId);
         
         if (bookIndex !== -1) {
-            const formData = new FormData(this);
-            
-            books[bookIndex].title = formData.get('title');
-            books[bookIndex].author = formData.get('author');
-            books[bookIndex].category = formData.get('category');
-            books[bookIndex].description = formData.get('description');
-            
-            // Handle file uploads
-            const coverFile = formData.get('cover');
-            const pdfFile = formData.get('pdf');
-            
-            if (coverFile && coverFile.size > 0) {
-                books[bookIndex].cover = URL.createObjectURL(coverFile);
+            try {
+                const formData = new FormData(this);
+                
+                books[bookIndex].title = formData.get('title');
+                books[bookIndex].author = formData.get('author');
+                books[bookIndex].category = formData.get('category');
+                books[bookIndex].description = formData.get('description');
+                
+                // Handle file uploads
+                const coverFile = formData.get('cover');
+                const pdfFile = formData.get('pdf');
+                
+                if (coverFile && coverFile.size > 0) {
+                    books[bookIndex].cover = await fileToBase64(coverFile);
+                }
+                
+                if (pdfFile && pdfFile.size > 0) {
+                    books[bookIndex].pdf = await fileToBase64(pdfFile);
+                }
+                
+                localStorage.setItem('books', JSON.stringify(books));
+                renderBooksTable();
+                $('#editBookModal').hide();
+                
+                alert('Buku berhasil diperbarui!');
+            } catch (error) {
+                console.error('Error updating files:', error);
+                alert('Terjadi kesalahan saat mengupdate file!');
             }
-            
-            if (pdfFile && pdfFile.size > 0) {
-                books[bookIndex].pdf = URL.createObjectURL(pdfFile);
-            }
-            
-            localStorage.setItem('books', JSON.stringify(books));
-            renderBooksTable();
-            $('#editBookModal').hide();
-            
-            alert('Buku berhasil diperbarui!');
         }
     });
 
