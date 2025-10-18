@@ -366,10 +366,34 @@ body {
     border-color: #667eea;
 }
 
+/* URL Input Styling */
+.form-group input[type="url"] {
+    padding: 0.75rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    font-family: monospace;
+}
+
+.form-group input[type="url"]:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group input[type="url"]:valid {
+    border-color: #28a745;
+}
+
+.form-group input[type="url"]:invalid {
+    border-color: #dc3545;
+}
+
 .form-group small {
     color: #666;
     font-size: 0.8rem;
     margin-top: 0.25rem;
+    display: block;
 }
 
 .form-actions {
