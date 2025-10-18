@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Perpustakaan Digital</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-book"></i>
+                <h1>Dashboard Admin</h1>
+            </div>
+            <div class="header-right">
+                <span id="adminName">Admin</span>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <div class="admin-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#books" class="nav-item active" data-section="books">
+                    <i class="fas fa-book"></i>
+                    Kelola Buku
+                </a>
+                <a href="#add-book" class="nav-item" data-section="add-book">
+                    <i class="fas fa-plus"></i>
+                    Tambah Buku
+                </a>
+                <a href="index.html" class="nav-item">
+                    <i class="fas fa-eye"></i>
+                    Lihat Website
+                </a>
+            </nav>
+        </div>
+
+        <div class="admin-content">
+            <!-- Section: Kelola Buku -->
+            <section id="books-section" class="content-section active">
+                <div class="section-header">
+                    <h2>Kelola Buku</h2>
+                    <button id="addBookBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Tambah Buku Baru
+                    </button>
+                </div>
+                
+                <div class="books-table-container">
+                    <table class="books-table">
+                        <thead>
+                            <tr>
+                                <th>Cover</th>
+                                <th>Judul</th>
+                                <th>Penulis</th>
+                                <th>Kategori</th>
+                                <th>Deskripsi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTableBody">
+                            <!-- Data buku akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section: Tambah Buku -->
+            <section id="add-book-section" class="content-section">
+                <div class="section-header">
+                    <h2>Tambah Buku Baru</h2>
+                </div>
+                
+                <form id="addBookForm" class="book-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bookTitle">Judul Buku *</label>
+                            <input type="text" id="bookTitle" name="title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bookAuthor">Penulis *</label>
+                            <input type="text" id="bookAuthor" name="author" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bookCategory">Kategori *</label>
+                            <select id="bookCategory" name="category" required>
+                                <option value="">Pilih Kategori</option>
+                                <option value="Fiksi">Fiksi</option>
+                                <option value="Non-Fiksi">Non-Fiksi</option>
+                                <option value="Teknologi">Teknologi</option>
+                                <option value="Pendidikan">Pendidikan</option>
+                                <option value="Sejarah">Sejarah</option>
+                                <option value="Sains">Sains</option>
+                                <option value="Bisnis">Bisnis</option>
+                                <option value="Kesehatan">Kesehatan</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bookCover">Cover Buku</label>
+                            <input type="file" id="bookCover" name="cover" accept="image/*">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookDescription">Deskripsi *</label>
+                        <textarea id="bookDescription" name="description" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookPdf">File PDF *</label>
+                        <input type="file" id="bookPdf" name="pdf" accept=".pdf" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Simpan Buku
+                        </button>
+                        <button type="button" id="cancelBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Edit Buku -->
+    <div id="editBookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Buku</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="editBookForm" class="book-form">
+                <input type="hidden" id="editBookId" name="id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookTitle">Judul Buku *</label>
+                        <input type="text" id="editBookTitle" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editBookAuthor">Penulis *</label>
+                        <input type="text" id="editBookAuthor" name="author" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookCategory">Kategori *</label>
+                        <select id="editBookCategory" name="category" required>
+                            <option value="">Pilih Kategori</option>
+                            <option value="Fiksi">Fiksi</option>
+                            <option value="Non-Fiksi">Non-Fiksi</option>
+                            <option value="Teknologi">Teknologi</option>
+                            <option value="Pendidikan">Pendidikan</option>
+                            <option value="Sejarah">Sejarah</option>
+                            <option value="Sains">Sains</option>
+                            <option value="Bisnis">Bisnis</option>
+                            <option value="Kesehatan">Kesehatan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editBookCover">Cover Buku</label>
+                        <input type="file" id="editBookCover" name="cover" accept="image/*">
+                        <small>Kosongkan jika tidak ingin mengubah cover</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editBookDescription">Deskripsi *</label>
+                    <textarea id="editBookDescription" name="description" rows="4" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editBookPdf">File PDF</label>
+                    <input type="file" id="editBookPdf" name="pdf" accept=".pdf">
+                    <small>Kosongkan jika tidak ingin mengubah file PDF</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Update Buku
+                    </button>
+                    <button type="button" class="btn btn-secondary modal-close">
+                        <i class="fas fa-times"></i>
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
