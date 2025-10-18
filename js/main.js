@@ -8,7 +8,7 @@ $(document).ready(function() {
             category: "Teknologi",
             description: "Buku lengkap tentang JavaScript modern dengan ES6+ dan framework populer.",
             cover: "assets/images/js-book.jpg",
-            pdf: "assets/pdfs/js-book.pdf"
+            pdf: "https://drive.google.com/file/d/1ABC123DEF456GHI789JKL/view?usp=sharing"
         },
         {
             id: 2,
@@ -17,7 +17,7 @@ $(document).ready(function() {
             category: "Sejarah",
             description: "Pembahasan mendalam tentang sejarah Indonesia dari masa kerajaan hingga kemerdekaan.",
             cover: "assets/images/history-book.jpg",
-            pdf: "assets/pdfs/history-book.pdf"
+            pdf: "https://drive.google.com/file/d/2XYZ789ABC123DEF456GHI/view?usp=sharing"
         }
     ];
 
@@ -106,15 +106,60 @@ $(document).ready(function() {
         renderBooks(filteredBooks);
     }
 
-    // View PDF in Modal
+    // View PDF - Updated for Google Drive links
     $(document).on('click', '.view-pdf', function() {
         const pdfData = $(this).data('pdf');
         const bookTitle = $(this).data('title');
         
         if (pdfData) {
-            $('#pdfModalTitle').text(bookTitle);
-            $('#pdfViewer').attr('src', pdfData);
-            $('#pdfModal').show();
+            // Check if it's a Google Drive link
+            if (pdfData.includes('drive.google.com')) {
+                // Open Google Drive PDF in new tab
+                window.open(pdfData, '_blank');
+            } else if (pdfData.startsWith('data:application/pdf')) {
+                // Handle base64 PDFs (for existing data)
+                const newWindow = window.open();
+                if (newWindow) {
+                    newWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>${bookTitle}</title>
+                                <style>
+                                    body { 
+                                        margin: 0; 
+                                        padding: 0; 
+                                        background: #f0f0f0;
+                                    }
+                                    .pdf-container {
+                                        width: 100vw;
+                                        height: 100vh;
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                    }
+                                    iframe { 
+                                        width: 90vw; 
+                                        height: 90vh; 
+                                        border: none; 
+                                        border-radius: 8px;
+                                        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="pdf-container">
+                                    <iframe src="${pdfData}" type="application/pdf"></iframe>
+                                </div>
+                            </body>
+                        </html>
+                    `);
+                } else {
+                    alert('Popup blocker mencegah pembukaan PDF. Silakan izinkan popup untuk situs ini.');
+                }
+            } else {
+                // Regular URL
+                window.open(pdfData, '_blank');
+            }
         } else {
             alert('File PDF tidak tersedia!');
         }
