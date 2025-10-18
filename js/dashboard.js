@@ -11,6 +11,52 @@ $(document).ready(function() {
     // Load books data
     let books = JSON.parse(localStorage.getItem('books')) || [];
 
+    // Helper function to convert Google Drive link to direct download
+    function convertGoogleDriveLink(url) {
+        // Extract file ID from Google Drive URL
+        const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+        if (fileIdMatch) {
+            const fileId = fileIdMatch[1];
+            // Return direct download link
+            return `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
+        return url; // Return original URL if not a Google Drive link
+    }
+
+    // Helper function to validate Google Drive link
+    function isValidGoogleDriveLink(url) {
+        const googleDrivePattern = /^https:\/\/drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/;
+        return googleDrivePattern.test(url);
+    }
+
+    // Helper function to compress image
+    function compressImage(file, maxWidth = 300, quality = 0.8) {
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = () => {
+                // Calculate new dimensions
+                let { width, height } = img;
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw and compress
+                ctx.drawImage(img, 0, 0, width, height);
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedDataUrl);
+            };
+            
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
     // Navigation
     $('.nav-item').on('click', function(e) {
         e.preventDefault();
@@ -60,21 +106,19 @@ $(document).ready(function() {
         });
     }
 
-    // Helper function to convert file to base64
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-    }
-
     // Add book form
     $('#addBookForm').on('submit', async function(e) {
         e.preventDefault();
         
         const formData = new FormData(this);
+        const pdfLink = formData.get('pdf');
+        
+        // Validate Google Drive link
+        if (pdfLink && !isValidGoogleDriveLink(pdfLink)) {
+            alert('Link Google Drive tidak valid. Pastikan link sudah di-share dengan pengaturan "Anyone with the link can view"');
+            return;
+        }
+        
         const newBook = {
             id: Date.now(),
             title: formData.get('title'),
@@ -88,14 +132,13 @@ $(document).ready(function() {
         try {
             // Handle file uploads
             const coverFile = formData.get('cover');
-            const pdfFile = formData.get('pdf');
 
             if (coverFile && coverFile.size > 0) {
-                newBook.cover = await fileToBase64(coverFile);
+                newBook.cover = await compressImage(coverFile);
             }
 
-            if (pdfFile && pdfFile.size > 0) {
-                newBook.pdf = await fileToBase64(pdfFile);
+            if (pdfLink && pdfLink.trim()) {
+                newBook.pdf = convertGoogleDriveLink(pdfLink.trim());
             }
 
             books.push(newBook);
@@ -113,7 +156,7 @@ $(document).ready(function() {
             $('#books-section').addClass('active');
         } catch (error) {
             console.error('Error uploading files:', error);
-            alert('Terjadi kesalahan saat mengupload file!');
+            alert('Terjadi kesalahan saat mengupload file: ' + error.message);
         }
     });
 
@@ -129,6 +172,17 @@ $(document).ready(function() {
             $('#editBookCategory').val(book.category);
             $('#editBookDescription').val(book.description);
             
+            // Convert back to original Google Drive link for editing
+            if (book.pdf && book.pdf.includes('drive.google.com')) {
+                const fileIdMatch = book.pdf.match(/id=([a-zA-Z0-9-_]+)/);
+                if (fileIdMatch) {
+                    const fileId = fileIdMatch[1];
+                    $('#editBookPdf').val(`https://drive.google.com/file/d/${fileId}/view?usp=sharing`);
+                }
+            } else {
+                $('#editBookPdf').val(book.pdf || '');
+            }
+            
             $('#editBookModal').show();
         }
     });
@@ -143,6 +197,13 @@ $(document).ready(function() {
         if (bookIndex !== -1) {
             try {
                 const formData = new FormData(this);
+                const pdfLink = formData.get('pdf');
+                
+                // Validate Google Drive link if provided
+                if (pdfLink && pdfLink.trim() && !isValidGoogleDriveLink(pdfLink)) {
+                    alert('Link Google Drive tidak valid. Pastikan link sudah di-share dengan pengaturan "Anyone with the link can view"');
+                    return;
+                }
                 
                 books[bookIndex].title = formData.get('title');
                 books[bookIndex].author = formData.get('author');
@@ -151,14 +212,13 @@ $(document).ready(function() {
                 
                 // Handle file uploads
                 const coverFile = formData.get('cover');
-                const pdfFile = formData.get('pdf');
                 
                 if (coverFile && coverFile.size > 0) {
-                    books[bookIndex].cover = await fileToBase64(coverFile);
+                    books[bookIndex].cover = await compressImage(coverFile);
                 }
                 
-                if (pdfFile && pdfFile.size > 0) {
-                    books[bookIndex].pdf = await fileToBase64(pdfFile);
+                if (pdfLink && pdfLink.trim()) {
+                    books[bookIndex].pdf = convertGoogleDriveLink(pdfLink.trim());
                 }
                 
                 localStorage.setItem('books', JSON.stringify(books));
@@ -168,7 +228,7 @@ $(document).ready(function() {
                 alert('Buku berhasil diperbarui!');
             } catch (error) {
                 console.error('Error updating files:', error);
-                alert('Terjadi kesalahan saat mengupdate file!');
+                alert('Terjadi kesalahan saat mengupdate file: ' + error.message);
             }
         }
     });
