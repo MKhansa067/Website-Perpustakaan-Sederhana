@@ -73,6 +73,10 @@ $(document).ready(function() {
         const categoryFilter = $('#categoryFilter');
         const authorFilter = $('#authorFilter');
 
+        // Clear existing options except first
+        categoryFilter.find('option:not(:first)').remove();
+        authorFilter.find('option:not(:first)').remove();
+
         categories.forEach(category => {
             categoryFilter.append(`<option value="${category}">${category}</option>`);
         });
@@ -102,33 +106,32 @@ $(document).ready(function() {
         renderBooks(filteredBooks);
     }
 
-    // View PDF - Updated to handle base64 data
     // View PDF in Modal
-$(document).on('click', '.view-pdf', function() {
-    const pdfData = $(this).data('pdf');
-    const bookTitle = $(this).data('title');
-    
-    if (pdfData) {
-        $('#pdfModalTitle').text(bookTitle);
-        $('#pdfViewer').attr('src', pdfData);
-        $('#pdfModal').show();
-    } else {
-        alert('File PDF tidak tersedia!');
-    }
-});
+    $(document).on('click', '.view-pdf', function() {
+        const pdfData = $(this).data('pdf');
+        const bookTitle = $(this).data('title');
+        
+        if (pdfData) {
+            $('#pdfModalTitle').text(bookTitle);
+            $('#pdfViewer').attr('src', pdfData);
+            $('#pdfModal').show();
+        } else {
+            alert('File PDF tidak tersedia!');
+        }
+    });
 
-// Close PDF Modal
-$('.modal-close').on('click', function() {
-    $('#pdfModal').hide();
-    $('#pdfViewer').attr('src', '');
-});
-
-$(window).on('click', function(e) {
-    if (e.target.id === 'pdfModal') {
+    // Close PDF Modal
+    $('.modal-close').on('click', function() {
         $('#pdfModal').hide();
         $('#pdfViewer').attr('src', '');
-    }
-});
+    });
+
+    $(window).on('click', function(e) {
+        if (e.target.id === 'pdfModal') {
+            $('#pdfModal').hide();
+            $('#pdfViewer').attr('src', '');
+        }
+    });
 
     // Event listeners
     $('#searchInput').on('input', filterBooks);
