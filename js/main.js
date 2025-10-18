@@ -53,7 +53,7 @@ $(document).ready(function() {
                         <span class="book-category">${book.category}</span>
                         <p class="book-description">${book.description}</p>
                         <div class="book-actions">
-                            <button class="btn btn-primary view-pdf" data-pdf="${book.pdf}">
+                            <button class="btn btn-primary view-pdf" data-pdf="${book.pdf}" data-title="${book.title}">
                                 <i class="fas fa-eye"></i>
                                 Lihat PDF
                             </button>
@@ -102,16 +102,43 @@ $(document).ready(function() {
         renderBooks(filteredBooks);
     }
 
+    // View PDF - Updated to handle base64 data
+    $(document).on('click', '.view-pdf', function() {
+        const pdfData = $(this).data('pdf');
+        const bookTitle = $(this).data('title');
+        
+        if (pdfData) {
+            // Check if it's base64 data or URL
+            if (pdfData.startsWith('data:application/pdf')) {
+                // Open PDF in new tab with base64 data
+                const newWindow = window.open();
+                newWindow.document.write(`
+                    <html>
+                        <head>
+                            <title>${bookTitle}</title>
+                            <style>
+                                body { margin: 0; padding: 0; }
+                                iframe { width: 100vw; height: 100vh; border: none; }
+                            </style>
+                        </head>
+                        <body>
+                            <iframe src="${pdfData}" type="application/pdf"></iframe>
+                        </body>
+                    </html>
+                `);
+            } else {
+                // Regular URL
+                window.open(pdfData, '_blank');
+            }
+        } else {
+            alert('File PDF tidak tersedia!');
+        }
+    });
+
     // Event listeners
     $('#searchInput').on('input', filterBooks);
     $('#categoryFilter').on('change', filterBooks);
     $('#authorFilter').on('change', filterBooks);
-
-    // View PDF
-    $(document).on('click', '.view-pdf', function() {
-        const pdfPath = $(this).data('pdf');
-        window.open(pdfPath, '_blank');
-    });
 
     // Initialize
     renderBooks();
