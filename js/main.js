@@ -103,37 +103,32 @@ $(document).ready(function() {
     }
 
     // View PDF - Updated to handle base64 data
-    $(document).on('click', '.view-pdf', function() {
-        const pdfData = $(this).data('pdf');
-        const bookTitle = $(this).data('title');
-        
-        if (pdfData) {
-            // Check if it's base64 data or URL
-            if (pdfData.startsWith('data:application/pdf')) {
-                // Open PDF in new tab with base64 data
-                const newWindow = window.open();
-                newWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>${bookTitle}</title>
-                            <style>
-                                body { margin: 0; padding: 0; }
-                                iframe { width: 100vw; height: 100vh; border: none; }
-                            </style>
-                        </head>
-                        <body>
-                            <iframe src="${pdfData}" type="application/pdf"></iframe>
-                        </body>
-                    </html>
-                `);
-            } else {
-                // Regular URL
-                window.open(pdfData, '_blank');
-            }
-        } else {
-            alert('File PDF tidak tersedia!');
-        }
-    });
+    // View PDF in Modal
+$(document).on('click', '.view-pdf', function() {
+    const pdfData = $(this).data('pdf');
+    const bookTitle = $(this).data('title');
+    
+    if (pdfData) {
+        $('#pdfModalTitle').text(bookTitle);
+        $('#pdfViewer').attr('src', pdfData);
+        $('#pdfModal').show();
+    } else {
+        alert('File PDF tidak tersedia!');
+    }
+});
+
+// Close PDF Modal
+$('.modal-close').on('click', function() {
+    $('#pdfModal').hide();
+    $('#pdfViewer').attr('src', '');
+});
+
+$(window).on('click', function(e) {
+    if (e.target.id === 'pdfModal') {
+        $('#pdfModal').hide();
+        $('#pdfViewer').attr('src', '');
+    }
+});
 
     // Event listeners
     $('#searchInput').on('input', filterBooks);
